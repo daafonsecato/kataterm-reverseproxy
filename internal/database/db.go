@@ -2,18 +2,23 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
+
+	"github.com/daafonsecato/kataterm-reverseproxy/pkg/config"
 	_ "github.com/lib/pq"
-	"your-project-name/pkg/config"
 )
 
 var db *sql.DB
 
 func InitDB() (*sql.DB, error) {
-	host = os.Getenv("DB_HOST")
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		fmt.Printf("Failed to load config: %v", err)
+		return nil, err
+	}
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
 
-	var err error
 	db, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
 		fmt.Printf("Failed to open database: %v", err)

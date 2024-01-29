@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/david8128/kataterm-reverseproxy/internal/app/handlers"
-	"github.com/david8128/kataterm-reverseproxy/internal/database"
-	"github.com/david8128/kataterm-reverseproxy/pkg/config"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/cssivision/reverseproxy"
+	"github.com/daafonsecato/kataterm-reverseproxy/pkg/handlers"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -29,27 +30,22 @@ func main() {
 		})
 	}
 
-	sc := controllers.NewSessionController()
+	sc := handlers.NewSessionController()
 
-	http.HandleFunc("/create", func(w http.ResponseWriter, r *http.Request) {
-		createMachineHandler(db, w, r)
-	}).Methods("GET")
-
-	http.HandleFunc("/terminate", func(w http.ResponseWriter, r *http.Request) {
-		terminateMachineHandler(db, w, r)
-	})
+	r.HandleFunc("/create", sc.createMachineHandler).Methods("GET")
+	r.HandleFunc("/terminate", sc.terminateMachineHandler).Methods("POST", "OPTIONS")
 	r.Use(corsMiddleware)
 
 	http.ListenAndServe(":9090", r)
 
 	proxy := &reverseproxy.ReverseProxy{
-		Director:      customDirector(db),
+		Director:      handlers.customDirector(),
 		Transport:     http.DefaultTransport,
 		FlushInterval: 0,
 		ErrorLog:      log.New(os.Stderr, "proxy: ", log.LstdFlags),
 	}
 
 	http.Handle("/", proxy)
-	log.Println("Reverse proxy server started on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Reverse proxy server started on :7070")
+	log.Fatal(http.ListenAndServe(":7070", nil))
 }

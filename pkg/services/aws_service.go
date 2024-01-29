@@ -2,6 +2,9 @@ package services
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -11,7 +14,9 @@ type AWSService struct {
 	EC2 *ec2.EC2
 }
 
-func NewAWSService(sess *session.Session) *AWSService {
+func NewAWSService() *AWSService {
+
+	sess := session.Must(session.NewSession())
 	return &AWSService{
 		EC2: ec2.New(sess),
 	}
@@ -19,8 +24,8 @@ func NewAWSService(sess *session.Session) *AWSService {
 
 func (s *AWSService) CreateInstance(imageID string, instanceType string, subnetID string) (*ec2.Instance, error) {
 	// Load the AWS SDK configuration
-	sess := session.Must(session.NewSession())
-	s = NewAWSService(sess)
+
+	s = NewAWSService()
 	svc := s.EC2
 
 	userData := `#!/bin/bash
@@ -42,46 +47,29 @@ func (s *AWSService) CreateInstance(imageID string, instanceType string, subnetI
 	}
 
 	// Launch the instance
-	result, err := svc.RunInstances(context.TODO(), runInstancesInput)
+	result, err := svc.RunInstances(runInstancesInput)
 	if err != nil {
 		fmt.Println("Error launching instance:", err)
-		return
+		return nil, err
 	}
+
+	// Return the instance from the reservation
+	return result.Instances[0], nil
 }
 
-func terminateInstanceBySessionID(db *sql.DB, sessionID string) error {
-	awsInstanceID, err := getAWSInstanceID(db, sessionID)
-	if err != nil {
-		return fmt.Errorf("error getting AWS instance ID: %v", err)
-	}
-
+func (s *AWSService) terminateInstance(awsInstanceID string) error {
 	// Initialize AWS session
-	sess, err := session.NewSession(&aws.Config{
-		// Specify AWS Config if needed
-	})
-	if err != nil {
-		return fmt.Errorf("error creating AWS session: %v", err)
-	}
-
-	// Create new EC2 client
-	svc := ec2.New(sess)
-
+	s = NewAWSService()
+	svc := s.EC2
 	// Terminate the instance
 	input := &ec2.TerminateInstancesInput{
 		InstanceIds: []*string{aws.String(awsInstanceID)},
 	}
 
-	_, err = svc.TerminateInstancesWithContext(context.Background(), input)
+	_, err := svc.TerminateInstancesWithContext(context.Background(), input)
 	if err != nil {
 		return fmt.Errorf("error terminating instance: %v", err)
 	}
 
 	return nil
-}
-
-func (s *AWSService) TerminateInstance(instanceID string) error {
-	sess := session.Must(session.NewSession())
-	s = NewAWSService(sess)
-	svc := s.EC2
-	terminateInstanceBySessionID(db, sessionID)
 }

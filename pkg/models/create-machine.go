@@ -1,45 +1,14 @@
-package handlers
+package models
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/google/uuid"
 )
 
-type SessionStore struct {
-	db *sql.DB
-}
-
-func NewSessionStore(database *sql.DB) *SessionStore {
-	database.InitDB()
-	db, err := database.InitDB()
-	if err != nil {
-		errorMsg := fmt.Sprintf("Failed to open database: %v", err)
-		panic(errorMsg)
-	}
-
-	err = db.Ping()
-	if err != nil {
-		errorMsg := fmt.Sprintf("Failed to ping database: %v", err)
-		panic(errorMsg)
-	}
-
-	if db == nil {
-		panic("db is nil")
-	}
-	return &SessionStore{
-		db: db,
-	}
-}
-
-func (store *SessionStore) Close() {
-	store.db.Close()
-}
-
-func storeMachineAndSession(db *sql.DB, awsInstanceID, ipAddress string) error {
+func (store *SessionStore) storeMachineAndSession(db *sql.DB, awsInstanceID, ipAddress string) error {
 	// Start a transaction
-	tx, err := db.Begin()
+	tx, err := store.db.Begin()
 	if err != nil {
 		return err
 	}

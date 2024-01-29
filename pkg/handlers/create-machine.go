@@ -1,40 +1,34 @@
 package handlers
 
 import (
-	"database/sql"
-	"github.com/david8128/kataterm-reverseproxy/internal/app/models"
-	"github.com/david8128/kataterm-reverseproxy/internal/database"
-	"github.com/david8128/kataterm-reverseproxy/internal/app/services"
+	"fmt"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
-type SessionStore struct {
-	db *sql.DB
-}
-
-type SessionController struct {
-	sessionStore        *models.SessionStore
-}
-
-func NewSessionController() *SessionController {
-	db, err := database.InitDB()
+func generateSessionID() string {
+	newUUID, err := uuid.NewUUID()
 	if err != nil {
-		panic("Error initializing DB")
+		// Handle the error according to your application's needs
+		// For example, you might want to log the error and return a fallback value
+		return "fallback-session-id"
 	}
-
-	sessionStore := models.NewSessionStore(db)
-
-	return &SessionController{
-		sessionStore:        sessionStore,
-	}
+	return newUUID.String()
 }
-func (controller *SessionController) createMachineHandler(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
+func (controller *SessionController) createMachineHandler(w http.ResponseWriter, r *http.Request) {
+
+	result, err := controller.AWSService.CreateInstance("ami-0c4c061339e1a2038", "t2.micro", "subnet-0f2a559b782561e6d")
+	if err != nil {
+		fmt.Fprint(w, "Failed to create EC2 machine")
+		return
+	}
 	// Assume you have a way to generate or obtain a session ID
 	sessionID := generateSessionID() // Implement this function
 
-	if len(result.Instances) > 0 {
-		instance := result.Instances[0]
+	if result != nil {
+		instance := result
 		instanceID := *instance.InstanceId
 		var ipAddress string
 		if instance.PrivateIpAddress != nil {
@@ -42,7 +36,7 @@ func (controller *SessionController) createMachineHandler(db *sql.DB, w http.Res
 		}
 
 		// Store the machine and session information in the database
-		storeMachineAndSession(db, instanceID, ipAddress, sessionID)
+		controller.sessionStore.storeMachineAndSession(controller.sessionStore.db, instanceID, ipAddress, sessionID)
 
 		if ipAddress != "" {
 			fmt.Fprintf(w, "EC2 machine created with IP address: %s", ipAddress)
