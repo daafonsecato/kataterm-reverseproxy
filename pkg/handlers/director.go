@@ -21,9 +21,13 @@ func (controller *SessionController) customDirector() func(req *http.Request) {
 
 		sessionID := subdomains[0]
 		service := subdomains[1]
-
+		machineID, err := controller.sessionStore.GetAWSInstanceID(sessionID)
+		if err != nil {
+			log.Println("Error getting machine ID:", err)
+			return // Or set a default targetHost
+		}
 		// Get the host for the machine
-		targetHost, err := controller.sessionStore.getMachineHost(sessionID)
+		targetHost, err := controller.sessionStore.GetMachineHost(machineID)
 		if err != nil {
 			log.Println("Error getting machine host:", err)
 			return // Or set a default targetHost

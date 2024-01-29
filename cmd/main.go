@@ -32,14 +32,14 @@ func main() {
 
 	sc := handlers.NewSessionController()
 
-	r.HandleFunc("/create", sc.createMachineHandler).Methods("GET")
-	r.HandleFunc("/terminate", sc.terminateMachineHandler).Methods("POST", "OPTIONS")
+	r.HandleFunc("/create", sc.CreateMachineHandler).Methods("GET")
+	r.HandleFunc("/terminate", sc.TerminateMachineHandler).Methods("POST", "OPTIONS")
 	r.Use(corsMiddleware)
 
 	http.ListenAndServe(":9090", r)
 
 	proxy := &reverseproxy.ReverseProxy{
-		Director:      handlers.customDirector(),
+		Director:      sc.CustomDirector(),
 		Transport:     http.DefaultTransport,
 		FlushInterval: 0,
 		ErrorLog:      log.New(os.Stderr, "proxy: ", log.LstdFlags),

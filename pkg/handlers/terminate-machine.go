@@ -29,7 +29,7 @@ func (controller *SessionController) terminateMachineHandler(w http.ResponseWrit
 	}
 
 	// Get the InstanceID using the GetAWSInstanceID function from the models package
-	instanceID, err := controller.sessionStore.GetAWSInstanceID(controller.sessionStore.db)
+	instanceID, err := controller.sessionStore.GetAWSInstanceID(req.SessionID)
 	if err != nil {
 		log.Printf("Failed to get InstanceID: %v", err)
 		http.Error(w, fmt.Sprintf("Error getting InstanceID: %v", err), http.StatusInternalServerError)
@@ -37,7 +37,7 @@ func (controller *SessionController) terminateMachineHandler(w http.ResponseWrit
 	}
 
 	// Call the terminateInstance function from the services package with the obtained InstanceID
-	err = controller.AWSService.terminateInstance(instanceID)
+	err = controller.AWSService.TerminateInstance(instanceID)
 	if err != nil {
 		log.Printf("Failed to terminate m achine: %v", err)
 		http.Error(w, fmt.Sprintf("Error terminating machine: %v", err), http.StatusInternalServerError)

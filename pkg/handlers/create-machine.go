@@ -3,19 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/google/uuid"
 )
-
-func generateSessionID() string {
-	newUUID, err := uuid.NewUUID()
-	if err != nil {
-		// Handle the error according to your application's needs
-		// For example, you might want to log the error and return a fallback value
-		return "fallback-session-id"
-	}
-	return newUUID.String()
-}
 
 func (controller *SessionController) createMachineHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -24,8 +12,6 @@ func (controller *SessionController) createMachineHandler(w http.ResponseWriter,
 		fmt.Fprint(w, "Failed to create EC2 machine")
 		return
 	}
-	// Assume you have a way to generate or obtain a session ID
-	sessionID := generateSessionID() // Implement this function
 
 	if result != nil {
 		instance := result
@@ -36,8 +22,11 @@ func (controller *SessionController) createMachineHandler(w http.ResponseWriter,
 		}
 
 		// Store the machine and session information in the database
-		controller.sessionStore.storeMachineAndSession(controller.sessionStore.db, instanceID, ipAddress, sessionID)
-
+		sessionID, err := controller.sessionStore.StoreMachineAndSession(instanceID, ipAddress)
+		if err != nil {
+			fmt.Fprint(w, "Failed to create EC2 machine")
+			return
+		}
 		if ipAddress != "" {
 			fmt.Fprintf(w, "EC2 machine created with IP address: %s", ipAddress)
 			// Generate the domain with session ID as a subdomain

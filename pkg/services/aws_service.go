@@ -57,7 +57,7 @@ func (s *AWSService) CreateInstance(imageID string, instanceType string, subnetI
 	return result.Instances[0], nil
 }
 
-func (s *AWSService) terminateInstance(awsInstanceID string) error {
+func (s *AWSService) TerminateInstance(awsInstanceID string) error {
 	// Initialize AWS session
 	s = NewAWSService()
 	svc := s.EC2

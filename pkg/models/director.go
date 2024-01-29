@@ -1,8 +1,8 @@
 package models
 
-func (store *SessionStore) getMachineHost(machineID int) (string, error) {
+func (store *SessionStore) GetMachineHost(machineID string) (string, error) {
 	var host string
-	query := `SELECT domain FROM machines WHERE id = $1`
+	query := `SELECT domain FROM machines WHERE aws_instance_id = $1`
 	err := store.db.QueryRow(query, machineID).Scan(&host)
 	if err != nil {
 		return "", err
