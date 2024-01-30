@@ -11,7 +11,7 @@ type TerminationRequest struct {
 	SessionID string `json:"session_id"`
 }
 
-func (controller *SessionController) terminateMachineHandler(w http.ResponseWriter, r *http.Request) {
+func (controller *SessionController) TerminateMachineHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return

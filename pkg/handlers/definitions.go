@@ -1,16 +1,10 @@
 package handlers
 
 import (
-	"database/sql"
-
 	db "github.com/daafonsecato/kataterm-reverseproxy/internal/database"
 	"github.com/daafonsecato/kataterm-reverseproxy/pkg/models"
 	"github.com/daafonsecato/kataterm-reverseproxy/pkg/services"
 )
-
-type SessionStore struct {
-	db *sql.DB
-}
 
 type SessionController struct {
 	sessionStore *models.SessionStore

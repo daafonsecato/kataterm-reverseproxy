@@ -15,11 +15,11 @@ type Config struct {
 
 func LoadConfig() (*Config, error) {
 	return &Config{
-		DBHost:     os.Getenv("postgres"),
+		DBHost:     os.Getenv("DB_HOST"),
 		DBPort:     5432,
-		DBUser:     os.Getenv("your_username"),
-		DBPassword: os.Getenv("your_password"),
-		DBName:     os.Getenv("your_database_name"),
+		DBUser:     os.Getenv("DB_USER"),
+		DBPassword: os.Getenv("DB_PASS"),
+		DBName:     os.Getenv("DB_NAME"),
 		// Load other configurations as needed
 	}, nil
 }

@@ -15,8 +15,9 @@ type AWSService struct {
 }
 
 func NewAWSService() *AWSService {
-
-	sess := session.Must(session.NewSession())
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1"), // Replace with your desired region
+	}))
 	return &AWSService{
 		EC2: ec2.New(sess),
 	}
@@ -30,7 +31,6 @@ func (s *AWSService) CreateInstance(imageID string, instanceType string, subnetI
 
 	userData := `#!/bin/bash
 		cd /home/ubuntu/kateterm
-		echo "DB_HOST=10.0.0.175" >> backend/.env
 		docker compose up -d
 		# More commands
 	`
@@ -38,12 +38,14 @@ func (s *AWSService) CreateInstance(imageID string, instanceType string, subnetI
 
 	// Define the instance launch configuration
 	runInstancesInput := &ec2.RunInstancesInput{
-		ImageId:      aws.String(imageID),
-		InstanceType: aws.String(instanceType),
-		MinCount:     aws.Int64(1),
-		MaxCount:     aws.Int64(1),
-		UserData:     aws.String(userDataBase64),
-		SubnetId:     aws.String(subnetID),
+		ImageId:          aws.String(imageID),
+		InstanceType:     aws.String(instanceType),
+		MinCount:         aws.Int64(1),
+		MaxCount:         aws.Int64(1),
+		UserData:         aws.String(userDataBase64),
+		SubnetId:         aws.String(subnetID),
+		SecurityGroupIds: []*string{aws.String("sg-0b7b8839b95bc23ad")},
+		KeyName:          aws.String("my-key-pair"),
 	}
 
 	// Launch the instance

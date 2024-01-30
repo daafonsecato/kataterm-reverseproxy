@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-func (controller *SessionController) createMachineHandler(w http.ResponseWriter, r *http.Request) {
+func (controller *SessionController) CreateMachineHandler(w http.ResponseWriter, r *http.Request) {
 
-	result, err := controller.AWSService.CreateInstance("ami-0c4c061339e1a2038", "t2.micro", "subnet-0f2a559b782561e6d")
+	result, err := controller.AWSService.CreateInstance("ami-0c4c061339e1a2038", "t2.medium", "subnet-0f2a559b782561e6d")
 	if err != nil {
 		fmt.Fprint(w, "Failed to create EC2 machine")
 		return

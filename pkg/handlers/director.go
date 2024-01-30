@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -8,7 +9,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func (controller *SessionController) customDirector() func(req *http.Request) {
+func (controller *SessionController) CustomDirector() func(req *http.Request) {
 	return func(req *http.Request) {
 		host := req.Host
 		subdomains := strings.Split(host, ".")
@@ -18,7 +19,7 @@ func (controller *SessionController) customDirector() func(req *http.Request) {
 			log.Println("Invalid host:", host)
 			return // Or set a default targetHost
 		}
-
+		fmt.Println(subdomains)
 		sessionID := subdomains[0]
 		service := subdomains[1]
 		machineID, err := controller.sessionStore.GetAWSInstanceID(sessionID)
